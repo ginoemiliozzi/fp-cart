@@ -1,6 +1,5 @@
 package algebras
 
-import cats.effect.Sync
 import effects._
 import model.order.{PaymentError, PaymentId}
 import model.Payment
@@ -11,9 +10,6 @@ import org.http4s.client.Client
 import org.http4s.client.dsl.Http4sClientDsl
 import cats.implicits._
 import http._
-import org.http4s.client.blaze.BlazeClientBuilder
-
-import scala.concurrent.ExecutionContext
 
 trait PaymentClient[F[_]] {
   def process(payment: Payment): F[PaymentId]
@@ -42,15 +38,4 @@ class LivePaymentClient[F[_]: JsonDecoder: MonadThrow: BracketThrow](
             }
         }
       }
-}
-
-object LivePaymentClient {
-  def make[F[_]: Sync](): F[LivePaymentClient[F]] = {
-    BlazeClientBuilder[F](ExecutionContext.global).resource
-      .use { client =>
-        Sync[F].delay {
-          new LivePaymentClient[F](client)
-        }
-      }
-  }
 }

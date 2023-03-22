@@ -94,3 +94,12 @@ final class LiveShoppingCart[F[_]: Sync: MonadThrow] private (
     }
   }
 }
+
+object LiveShoppingCart {
+  def make[F[_]: Sync](
+      items: Items[F],
+      redisCommands: RedisCommands[F, String, String],
+      expiration: ShoppingCartExpiration
+  ): F[ShoppingCart[F]] =
+    Sync[F].delay(new LiveShoppingCart(items, redisCommands, expiration))
+}

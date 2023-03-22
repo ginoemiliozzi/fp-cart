@@ -19,8 +19,6 @@ import skunk.implicits._
 import squants.market.USD
 import utils.Utils.genCoercUUID
 
-import java.util.UUID
-
 trait Items[F[_]] {
   def findAll: F[List[Item]]
   def findBy(brand: BrandName): F[List[Item]]
@@ -47,7 +45,7 @@ final class LiveItems[F[_]: Sync] private (
   def findByLimited(brand: BrandName): F[List[Item]] =
     sessionPool.use { session =>
       session.prepare(selectByBrand).use { ps =>
-        ps.cursor(brand).use(_.fetch(10))
+        ps.cursor(brand).use(_.fetch(10).map(_._1))
       }
     }
 
@@ -73,6 +71,13 @@ final class LiveItems[F[_]: Sync] private (
         cmd.execute(item).void
       }
     }
+}
+
+object LiveItems {
+  def make[F[_]: Sync](
+      dbSession: Resource[F, Session[F]]
+  ): F[Items[F]] =
+    Sync[F].delay(new LiveItems(dbSession))
 }
 
 object ItemQueries {

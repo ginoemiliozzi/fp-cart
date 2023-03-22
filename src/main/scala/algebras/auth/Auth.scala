@@ -1,6 +1,7 @@
 package algebras.auth
 
 import algebras.{Tokens, Users}
+import cats.Applicative
 import cats.effect.Sync
 import cats.implicits._
 import dev.profunktor.auth.jwt.JwtToken
@@ -55,7 +56,7 @@ final class LiveAuth[F[_]: MonadThrow] private (
         case None => InvalidUserOrPassword(username).raiseError[F, JwtToken]
         case Some(user) =>
           redis.get(username.value).flatMap {
-            case Some(tk) => JwtToken(tk).pure
+            case Some(tk) => Applicative[F].pure(JwtToken(tk))
             case None =>
               tokens.create.flatTap(token => setLoggedInUserRedis(user, token))
           }

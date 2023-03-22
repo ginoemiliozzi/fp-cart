@@ -11,8 +11,6 @@ import skunk.codec.all._
 import skunk.implicits._
 import utils.Utils.genCoercUUID
 
-import java.util.UUID
-
 trait Users[F[_]] {
   def find(
       username: UserName
@@ -68,6 +66,13 @@ final class LiveUsers[F[_]: Sync: BracketThrow] private (
         }
       }
     }
+}
+
+object LiveUsers {
+  def make[F[_]: Sync](
+      sessionPool: Resource[F, Session[F]],
+      crypto: Crypto
+  ): F[Users[F]] = Sync[F].delay(new LiveUsers(sessionPool, crypto))
 }
 
 private object UserQueries {

@@ -15,8 +15,6 @@ import skunk.implicits._
 import squants.market.{Money, USD}
 import utils.Utils.genCoercUUID
 
-import java.util.UUID
-
 trait Orders[F[_]] {
   def get(
       userId: UserId,

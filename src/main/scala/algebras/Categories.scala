@@ -10,8 +10,6 @@ import skunk.codec.all._
 import skunk.implicits._
 import utils.Utils.genCoercUUID
 
-import java.util.UUID
-
 trait Categories[F[_]] {
   def findAll: F[List[Category]]
   def create(name: CategoryName): F[Unit]

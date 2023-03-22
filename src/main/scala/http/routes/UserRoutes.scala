@@ -9,9 +9,7 @@ import org.http4s.circe.JsonDecoder
 import org.http4s.dsl.Http4sDsl
 import org.http4s.server.Router
 import http._
-import cats._
 import cats.implicits._
-import cats.syntax.all._
 
 final class UserRoutes[F[_]: Defer: JsonDecoder: MonadThrow](
     auth: Auth[F]

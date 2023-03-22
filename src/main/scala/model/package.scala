@@ -1,6 +1,4 @@
 import cats.Eq
-import cats.effect.Sync
-import cats.implicits.toFunctorOps
 import io.estatico.newtype.Coercible
 import io.estatico.newtype.ops._
 import skunk.Codec

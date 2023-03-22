@@ -2,7 +2,13 @@ package programs
 
 import algebras.{Orders, PaymentClient, ShoppingCart}
 import cats.effect.Timer
-import model.order.{EmptyCartError, OrderError, OrderId, PaymentError, PaymentId}
+import model.order.{
+  EmptyCartError,
+  OrderError,
+  OrderId,
+  PaymentError,
+  PaymentId
+}
 import model.user.UserId
 import cats.implicits._
 import effects.{Background, MonadThrow}
@@ -12,7 +18,6 @@ import model.Payment
 import model.cart.{CartItem, CartTotal}
 import retry.{RetryDetails, RetryPolicy, retryingOnAllErrors}
 import retry.RetryDetails.{GivingUp, WillDelayAndRetry}
-import retry.RetryPolicies._
 import squants.market.Money
 
 import scala.concurrent.duration.DurationInt
@@ -20,10 +25,9 @@ import scala.concurrent.duration.DurationInt
 final class CheckoutProgram[F[_]: MonadThrow: Logger: Background: Timer](
     paymentClient: PaymentClient[F],
     shoppingCart: ShoppingCart[F],
-    orders: Orders[F]
+    orders: Orders[F],
+    retryPolicy: RetryPolicy[F]
 ) {
-  val retryPolicy: RetryPolicy[F] =
-    limitRetries[F](3) |+| exponentialBackoff[F](10.milliseconds)
 
   private def logError(
       action: String

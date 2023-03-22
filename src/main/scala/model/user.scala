@@ -1,7 +1,6 @@
 package model
 
 import ciris.Secret
-import eu.timepit.refined.types.string.NonEmptyString
 import io.estatico.newtype.macros.newtype
 
 import java.util.UUID
@@ -16,7 +15,7 @@ object user {
   case class User(id: UserId, name: UserName)
 
   // move to config
-  @newtype case class PasswordSalt(value: Secret[NonEmptyString])
+  @newtype case class PasswordSalt(value: Secret[String])
   @newtype case class EncryptCipher(value: Cipher)
   @newtype case class DecryptCipher(value: Cipher)
   @newtype case class TokenExpiration(value: FiniteDuration)

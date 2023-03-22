@@ -10,8 +10,6 @@ import skunk.implicits._
 import model._
 import utils.Utils.genCoercUUID
 
-import java.util.UUID
-
 trait Brands[F[_]] {
   def findAll: F[List[Brand]]
   def create(name: BrandName): F[Unit]

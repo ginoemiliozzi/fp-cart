@@ -31,10 +31,11 @@ class LiveAdminAuth[F[_]: Applicative](
     adminUser: AdminUser
 ) extends UsersAuth[F, AdminUser] {
   def findUser(token: JwtToken)(claim: JwtClaim): F[Option[AdminUser]] =
-    (token == adminToken)
-      .guard[Option]
-      .as(adminUser)
-      .pure
+    Applicative[F].pure {
+      (token == adminToken)
+        .guard[Option]
+        .as(adminUser)
+    }
 }
 
 object LiveUsersAuth {

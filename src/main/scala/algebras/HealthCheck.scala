@@ -1,5 +1,6 @@
 package algebras
 
+import algebras.health.{PostgresStatus, RedisStatus}
 import cats.Parallel
 import cats.effect._
 import cats.effect.implicits._
@@ -12,8 +13,11 @@ import skunk._
 import skunk.codec.all._
 import skunk.implicits._
 
-@newtype case class RedisStatus(value: Boolean)
-@newtype case class PostgresStatus(value: Boolean)
+object health {
+  @newtype case class RedisStatus(value: Boolean)
+
+  @newtype case class PostgresStatus(value: Boolean)
+}
 
 case class AppStatus(
     redis: RedisStatus,

@@ -12,7 +12,7 @@ object card {
   type CardNamePred = String Refined MatchesRegex[Rgx]
   type CardNumberPred = Long Refined Size[16]
   type CardExpirationPred = Int Refined Size[4]
-  type CardCCVPred = Int Refined Size[3]
+  type CardVerifValuePred = Int Refined Size[3]
 
   @newtype case class CardName(value: CardNamePred)
 
@@ -20,12 +20,12 @@ object card {
 
   @newtype case class CardExpiration(value: CardExpirationPred)
 
-  @newtype case class CardCCV(value: CardCCVPred)
+  @newtype case class CardVerifValue(value: CardVerifValuePred)
 
   case class Card(
       name: CardName,
       number: CardNumber,
       expiration: CardExpiration,
-      ccv: CardCCV
+      cvv: CardVerifValue
   )
 }
