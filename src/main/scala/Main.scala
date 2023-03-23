@@ -5,7 +5,6 @@ import eu.timepit.refined.types.numeric.PosInt
 import io.chrisdavenport.log4cats.slf4j.Slf4jLogger
 import model.cart.ShoppingCartExpiration
 import modules.{Algebras, CheckoutConfig, HttpApi, HttpClients, Programs}
-import org.http4s.HttpApp
 import org.http4s.server.blaze.BlazeServerBuilder
 
 import scala.concurrent.ExecutionContext
@@ -15,7 +14,6 @@ object Main extends IOApp {
 
   implicit val logger = Slf4jLogger.getLogger[IO]
   override def run(args: List[String]): IO[ExitCode] = {
-    val httpApp: HttpApp[IO] = ???
 
     val checkoutConfig = CheckoutConfig(PosInt(3), 1.second)
     AppResources.make[IO]().use { res =>
@@ -30,7 +28,7 @@ object Main extends IOApp {
         httpApi <- HttpApi.make[IO](algebras, programs)
         _ <- BlazeServerBuilder[IO](ExecutionContext.global)
           .bindHttp(8080, "0.0.0.0")
-          .withHttpApp(httpApp)
+          .withHttpApp(httpApi.httpApp)
           .serve
           .compile
           .drain
