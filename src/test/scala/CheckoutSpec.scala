@@ -3,7 +3,11 @@ import cats.effect.concurrent.Ref
 import effects.Background
 import io.chrisdavenport.log4cats.Logger
 import mocks.orders.successfulOrders
-import mocks.paymentClient.{successfulClient, unreachableClient}
+import mocks.paymentClient.{
+  failNTimesBeforeSuccess,
+  successfulClient,
+  unreachableClient
+}
 import mocks.shoppingCart.{emptyCart, successfulCart}
 import model.card.Card
 import model.cart.CartTotal
@@ -74,7 +78,7 @@ final class CheckoutSpec extends PureTestSuite {
     }
   }
 
-  test("retry on payment error") {
+  test("payment client unreacheable") {
     forAll {
       (
           uid: UserId,
@@ -87,7 +91,7 @@ final class CheckoutSpec extends PureTestSuite {
           Ref.of[IO, List[String]](List.empty).flatMap { errorsRef =>
             implicit val logAccumulator: Logger[IO] = accErrors(errorsRef)
             new CheckoutProgram[IO](
-              unreachableClient,
+              paymentClient = unreachableClient,
               successfulCart(cart),
               successfulOrders(oid),
               retryPolicy
@@ -102,6 +106,51 @@ final class CheckoutSpec extends PureTestSuite {
                     }
                 case _ => fail("Payment error was expected")
               }
+          }
+        }
+    }
+  }
+
+  test("payment client succeeds on retry") {
+    forAll {
+      (
+          uid: UserId,
+          cart: CartTotal,
+          pid: PaymentId,
+          oid: OrderId,
+          card: Card
+      ) =>
+        implicit val noOpBackground: Background[IO] = NoOpBackground
+        val paymentClientFailingTimes = 1
+        IOAssertion {
+          Ref.of[IO, List[String]](List.empty).flatMap { errorsRef =>
+            Ref.of[IO, Int](0).flatMap { attemptsRef =>
+              implicit val logAccumulator: Logger[IO] = accErrors(errorsRef)
+              new CheckoutProgram[IO](
+                paymentClient = failNTimesBeforeSuccess(
+                  paymentClientFailingTimes,
+                  attemptsRef,
+                  pid
+                ),
+                successfulCart(cart),
+                successfulOrders(oid),
+                retryPolicy
+              ).checkout(uid, card)
+                .attempt
+                .flatMap {
+                  case Left(e) =>
+                    fail(s"Expected to succeed after retrying ${e.getMessage}")
+                  case Right(orderId) =>
+                    errorsRef.get.flatMap { errors =>
+                      attemptsRef.get.map { attempts =>
+                        assert(orderId === oid)
+                        assert(
+                          errors.size + 1 === attempts
+                        ) // N errors + 1 success
+                      }
+                    }
+                }
+            }
           }
         }
     }
