@@ -1,6 +1,6 @@
 package modules
 
-import algebras.auth.{Auth, LiveAuth}
+import algebras.auth.{Auth, LiveAdminAuth, LiveAuth, LiveUsersAuth, UsersAuth}
 import algebras.{
   Brands,
   Categories,
@@ -16,13 +16,16 @@ import algebras.{
   LiveTokens,
   LiveUsers,
   Orders,
-  ShoppingCart
+  ShoppingCart,
+  Tokens,
+  Users
 }
 import cats.Parallel
 import cats.effect._
 import cats.syntax.all._
 import ciris.Secret
 import dev.profunktor.redis4cats.RedisCommands
+import http.users.{AdminUser, CommonUser}
 import model.cart.ShoppingCartExpiration
 import model.user.{PasswordSalt, TokenExpiration}
 import skunk._
@@ -48,7 +51,7 @@ object Algebras {
       tokens <- LiveTokens.make[F]()
       crypto <- LiveCrypto.make[F](cryptoSecret)
       users <- LiveUsers.make(sessionPool, crypto)
-      auth <- LiveAuth.make[F](TokenExpiration(1.day), tokens, users, redis)
+      authAlg <- AuthAlgebras.make(tokens, users, redis)
       health <- LiveHealthCheck.make[F](sessionPool, redis)
     } yield new Algebras[F](
       cart,
@@ -56,7 +59,7 @@ object Algebras {
       categories,
       items,
       orders,
-      auth,
+      authAlg,
       health
     )
 }
@@ -67,6 +70,26 @@ final class Algebras[F[_]] private (
     val categories: Categories[F],
     val items: Items[F],
     val orders: Orders[F],
-    val auth: Auth[F],
+    val authAlgebras: AuthAlgebras[F],
     val healthCheck: HealthCheck[F]
 )
+
+final class AuthAlgebras[F[_]] private (
+    val auth: Auth[F],
+    val userAuth: UsersAuth[F, CommonUser],
+    val adminAuth: UsersAuth[F, AdminUser]
+)
+
+object AuthAlgebras {
+  def make[F[_]: Sync](
+      tokens: Tokens[F],
+      users: Users[F],
+      redis: RedisCommands[F, String, String]
+  ): F[AuthAlgebras[F]] = {
+    for {
+      auth <- LiveAuth.make[F](TokenExpiration(1.day), tokens, users, redis)
+      userAuth <- LiveUsersAuth.make[F](redis)
+      adminAuth <- LiveAdminAuth.make[F]()
+    } yield new AuthAlgebras(auth, userAuth, adminAuth)
+  }
+}

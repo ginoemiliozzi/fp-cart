@@ -2,6 +2,8 @@ package modules
 
 import cats.effect._
 import cats.syntax.all._
+import dev.profunktor.auth.JwtAuthMiddleware
+import dev.profunktor.auth.jwt.JwtAuth
 import http.routes.admin.{
   AdminBrandRoutes,
   AdminCategoryRoutes,
@@ -22,7 +24,8 @@ import http.users.{AdminUser, CommonUser}
 import org.http4s._
 import org.http4s.implicits._
 import org.http4s.server.middleware._
-import org.http4s.server.{AuthMiddleware, Router}
+import org.http4s.server.Router
+import pdi.jwt.JwtAlgorithm
 
 import scala.concurrent.duration._
 
@@ -44,14 +47,30 @@ final class HttpApi[F[_]: Concurrent: Timer] private (
     programs: Programs[F]
 ) {
 
-  val usersMiddleware: AuthMiddleware[F, CommonUser] = ???
-  val adminMiddleware: AuthMiddleware[F, AdminUser] = ???
+  // TODO move keys to config
+  private def jwtAuth(secretKey: String) = JwtAuth
+    .hmac(
+      secretKey,
+      JwtAlgorithm.HS256
+    )
 
-  private val loginRoutes = new LoginRoutes[F](algebras.auth).routes
+  private val usersMiddleware =
+    JwtAuthMiddleware[F, CommonUser](
+      jwtAuth("secret-user"),
+      algebras.authAlgebras.userAuth.findUser
+    )
+  private val adminMiddleware =
+    JwtAuthMiddleware[F, AdminUser](
+      jwtAuth("secret-admin"),
+      algebras.authAlgebras.adminAuth.findUser
+    )
+
+  private val loginRoutes =
+    new LoginRoutes[F](algebras.authAlgebras.auth).routes
   private val logoutRoutes =
-    new LogoutRoutes[F](algebras.auth).routes(usersMiddleware)
+    new LogoutRoutes[F](algebras.authAlgebras.auth).routes(usersMiddleware)
 
-  private val userRoutes = new UserRoutes[F](algebras.auth).routes
+  private val userRoutes = new UserRoutes[F](algebras.authAlgebras.auth).routes
 
   // Open routes
   private val healthRoutes = new HealthRoutes[F](algebras.healthCheck).routes
