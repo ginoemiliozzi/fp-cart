@@ -7,7 +7,7 @@ import model.Payment
 import model.order.{PaymentError, PaymentId}
 
 object paymentClient {
-  def successfulClient(paymentId: PaymentId): PaymentClient[IO] =
+  def successfulPaymentClient(paymentId: PaymentId): PaymentClient[IO] =
     new PaymentClient[IO] {
       def process(payment: Payment): IO[PaymentId] =
         IO.pure(paymentId)

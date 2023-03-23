@@ -2,23 +2,29 @@ import cats.effect.IO
 import cats.effect.concurrent.Ref
 import effects.Background
 import io.chrisdavenport.log4cats.Logger
-import mocks.orders.successfulOrders
+import mocks.orders.{failingOrders, successfulOrders}
 import mocks.paymentClient.{
   failNTimesBeforeSuccess,
-  successfulClient,
+  successfulPaymentClient,
   unreachableClient
 }
 import mocks.shoppingCart.{emptyCart, successfulCart}
 import model.card.Card
 import model.cart.CartTotal
-import model.order.{EmptyCartError, OrderId, PaymentError, PaymentId}
+import model.order.{
+  EmptyCartError,
+  OrderError,
+  OrderId,
+  PaymentError,
+  PaymentId
+}
 import model.user.UserId
 import programs.CheckoutProgram
 import retry.RetryPolicies.limitRetries
 import retry.RetryPolicy
 import suite.PureTestSuite
 import utils.Arbitraries._
-import mocks.background.NoOpBackground
+import mocks.background.{NoOpBackground, bgCountSchedules}
 import mocks.logger.{accErrors, noLogs}
 import utils.IOAssertion
 
@@ -40,7 +46,7 @@ final class CheckoutSpec extends PureTestSuite {
         implicit val noLogsLogger: Logger[IO] = noLogs
         IOAssertion {
           new CheckoutProgram[IO](
-            successfulClient(pid),
+            successfulPaymentClient(pid),
             successfulCart(ct),
             successfulOrders(oid),
             retryPolicy
@@ -64,7 +70,7 @@ final class CheckoutSpec extends PureTestSuite {
         implicit val noLogsLogger: Logger[IO] = noLogs
         IOAssertion {
           new CheckoutProgram[IO](
-            successfulClient(pid),
+            successfulPaymentClient(pid),
             emptyCart,
             successfulOrders(oid),
             retryPolicy
@@ -151,6 +157,38 @@ final class CheckoutSpec extends PureTestSuite {
                     }
                 }
             }
+          }
+        }
+    }
+  }
+
+  test("retry order creation in background") {
+    forAll {
+      (
+          uid: UserId,
+          cart: CartTotal,
+          pid: PaymentId,
+          card: Card
+      ) =>
+        IOAssertion {
+          Ref.of[IO, Int](0).flatMap { schedulesRef =>
+            implicit val noLogger: Logger[IO] = noLogs
+            implicit val countSchedulesBg: Background[IO] =
+              bgCountSchedules(schedulesRef)
+            new CheckoutProgram[IO](
+              successfulPaymentClient(pid),
+              successfulCart(cart),
+              failingOrders,
+              retryPolicy
+            ).checkout(uid, card)
+              .attempt
+              .flatMap {
+                case Left(OrderError(_)) =>
+                  schedulesRef.get.map { bgSchedules =>
+                    assert(bgSchedules === 1)
+                  }
+                case _ => fail("Expected order failure and retry schedule")
+              }
           }
         }
     }
