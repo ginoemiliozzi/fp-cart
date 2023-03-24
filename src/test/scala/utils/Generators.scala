@@ -69,6 +69,18 @@ object Generators {
     } yield Item(id, name, description, price, brand, category)
   }
 
+  def itemsWithBrandGen(brand: Brand): Gen[List[Item]] = {
+    val itemWithBrandGen = for {
+      id <- cbUuid[ItemId]
+      name <- cbStr[ItemName]
+      description <- cbStr[ItemDescription]
+      price <- moneyGen
+      category <- categoryGen
+    } yield Item(id, name, description, price, brand, category)
+
+    Gen.listOfN(5, itemWithBrandGen)
+  }
+
   val cartItemGen: Gen[CartItem] = {
     for {
       item <- itemGen
