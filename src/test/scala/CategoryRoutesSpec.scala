@@ -1,27 +1,26 @@
 import cats.effect.IO
-import http.routes.BrandRoutes
+import http.routes.CategoryRoutes
 import io.circe.syntax.EncoderOps
 import org.http4s.circe._
-import mocks.brands.usingBrands
-import model.brand.Brand
 import org.http4s.implicits.http4sLiteralsSyntax
 import org.http4s.{Method, Request, Status}
 import suite.HttpTestSuite
 import http._
+import mocks.categories.usingCategories
+import model.category.Category
 import utils.Arbitraries._
 
-final class BrandRoutesSpec extends HttpTestSuite {
+final class CategoryRoutesSpec extends HttpTestSuite {
 
-  test("get brands") {
-    forAll { (brands: List[Brand]) =>
-      val brandRoutes = new BrandRoutes[IO](usingBrands(brands)).routes
+  test("get categories") {
+    forAll { (categories: List[Category]) =>
       assertHttp(
-        brandRoutes,
-        Request(method = Method.GET, uri = uri"/brands")
+        new CategoryRoutes[IO](usingCategories(categories)).routes,
+        Request(method = Method.GET, uri = uri"/categories")
       ) { response =>
         response.asJson.map { json =>
           val jsonResp = json.dropNullValues
-          val expected = brands.asJson.dropNullValues
+          val expected = categories.asJson.dropNullValues
           assert(response.status === Status.Ok && jsonResp === expected)
         }
       }

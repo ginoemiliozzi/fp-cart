@@ -21,13 +21,10 @@ final class ItemRoutesSpec extends HttpTestSuite {
         itemRoutes,
         Request(Method.GET, uri"/items")
       ) { response =>
-        val bodyJson = response.asJson
-        bodyJson.map { json =>
+        response.asJson.map { json =>
           val jsonResp = json.dropNullValues
           val expected = items.asJson.dropNullValues
-          assert(
-            response.status === Status.Ok && jsonResp === expected
-          )
+          assert(response.status === Status.Ok && jsonResp === expected)
         }
       }
     }
