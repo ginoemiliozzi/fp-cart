@@ -2,7 +2,7 @@ package utils
 
 import model.brand.Brand
 import model.card.Card
-import model.cart.CartTotal
+import model.cart.{Cart, CartTotal}
 import model.category.Category
 import model.item.Item
 import model.order.{OrderId, PaymentId}
@@ -11,6 +11,7 @@ import org.scalacheck.Arbitrary
 import utils.Generators.{
   brandGen,
   cardGen,
+  cartGen,
   cartTotalGen,
   categoryGen,
   cbUuid,
@@ -33,6 +34,9 @@ object Arbitraries {
 
   implicit val arbCategory: Arbitrary[Category] =
     Arbitrary(categoryGen)
+
+  implicit val arbCart: Arbitrary[Cart] =
+    Arbitrary(cartGen)
 
   implicit val arbPaymentId: Arbitrary[PaymentId] = Arbitrary(cbUuid[PaymentId])
   implicit val arbUserId: Arbitrary[UserId] = Arbitrary(cbUuid[UserId])

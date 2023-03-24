@@ -7,16 +7,16 @@ import io.estatico.newtype.ops.toCoercibleIdOps
 import model.brand.{Brand, BrandId, BrandName}
 import model.card.{
   Card,
-  CardVerifValue,
-  CardVerifValuePred,
   CardExpiration,
   CardExpirationPred,
   CardName,
   CardNamePred,
   CardNumber,
-  CardNumberPred
+  CardNumberPred,
+  CardVerifValue,
+  CardVerifValuePred
 }
-import model.cart.{CartItem, CartTotal, Quantity}
+import model.cart.{Cart, CartItem, CartTotal, Quantity}
 import model.category.{Category, CategoryId, CategoryName}
 import model.item.{Item, ItemDescription, ItemId, ItemName}
 import org.scalacheck.Gen
@@ -87,6 +87,15 @@ object Generators {
       qty <- cbInt[Quantity]
     } yield CartItem(item, qty)
   }
+
+  val itemMapGen: Gen[(ItemId, Quantity)] =
+    for {
+      i <- cbUuid[ItemId]
+      q <- cbInt[Quantity]
+    } yield i -> q
+
+  val cartGen: Gen[Cart] =
+    Gen.nonEmptyMap(itemMapGen).map(Cart.apply)
 
   val cartTotalGen: Gen[CartTotal] = {
     for {
