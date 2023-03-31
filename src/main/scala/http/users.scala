@@ -1,6 +1,5 @@
 package http
 
-import dev.profunktor.auth.jwt.JwtSymmetricAuth
 import eu.timepit.refined.types.string.NonEmptyString
 import io.estatico.newtype.macros.newtype
 import model.user.{Password, User, UserName}
@@ -8,10 +7,6 @@ import model.user.{Password, User, UserName}
 import scala.util.control.NoStackTrace
 
 object users {
-
-  // Tokens
-  @newtype case class AdminJwtAuth(value: JwtSymmetricAuth)
-  @newtype case class UserJwtAuth(value: JwtSymmetricAuth)
 
   // User types
   @newtype case class CommonUser(value: User)

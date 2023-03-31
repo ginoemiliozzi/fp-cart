@@ -2,7 +2,7 @@ import Dependencies._
 
 ThisBuild / scalaVersion := "2.13.3"
 
-resolvers += Resolver.sonatypeRepo("snapshots")
+resolvers ++= Resolver.sonatypeOssRepos("snapshots")
 
 lazy val root = (project in file("."))
   .enablePlugins(AshScriptPlugin)

@@ -3,7 +3,6 @@ package modules
 import cats.effect._
 import cats.syntax.all._
 import dev.profunktor.auth.JwtAuthMiddleware
-import dev.profunktor.auth.jwt.JwtAuth
 import http.routes.admin.{
   AdminBrandRoutes,
   AdminCategoryRoutes,
@@ -21,47 +20,46 @@ import http.routes.{
 }
 import http.routes.auth.{LoginRoutes, LogoutRoutes}
 import http.users.{AdminUser, CommonUser}
+import model.auth.{AdminJwtAuth, UserJwtAuth}
 import org.http4s._
 import org.http4s.implicits._
 import org.http4s.server.middleware._
 import org.http4s.server.Router
-import pdi.jwt.JwtAlgorithm
 
 import scala.concurrent.duration._
 
 object HttpApi {
   def make[F[_]: Concurrent: Timer](
       algebras: Algebras[F],
-      programs: Programs[F]
+      programs: Programs[F],
+      adminJwtAuth: AdminJwtAuth,
+      userJwtAuth: UserJwtAuth
   ): F[HttpApi[F]] =
     Sync[F].delay(
       new HttpApi[F](
         algebras,
-        programs
+        programs,
+        adminJwtAuth,
+        userJwtAuth
       )
     )
 }
 
 final class HttpApi[F[_]: Concurrent: Timer] private (
     algebras: Algebras[F],
-    programs: Programs[F]
+    programs: Programs[F],
+    adminJwtAuth: AdminJwtAuth,
+    userJwtAuth: UserJwtAuth
 ) {
-
-  // TODO move keys to config
-  private def jwtAuth(secretKey: String) = JwtAuth
-    .hmac(
-      secretKey,
-      JwtAlgorithm.HS256
-    )
 
   private val usersMiddleware =
     JwtAuthMiddleware[F, CommonUser](
-      jwtAuth("secret-user"),
+      userJwtAuth.value,
       algebras.authAlgebras.userAuth.findUser
     )
   private val adminMiddleware =
     JwtAuthMiddleware[F, AdminUser](
-      jwtAuth("secret-admin"),
+      adminJwtAuth.value,
       algebras.authAlgebras.adminAuth.findUser
     )
 

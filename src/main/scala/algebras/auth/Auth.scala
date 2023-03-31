@@ -4,13 +4,14 @@ import algebras.{Tokens, Users}
 import cats.Applicative
 import cats.effect.Sync
 import cats.implicits._
+import config.model.TokenExpiration
 import dev.profunktor.auth.jwt.JwtToken
 import dev.profunktor.redis4cats.RedisCommands
 import effects.MonadThrow
 import http._
 import http.users.{InvalidUserOrPassword, UsernameInUse}
 import io.circe.syntax.EncoderOps
-import model.user.{Password, TokenExpiration, User, UserName}
+import model.user.{Password, User, UserName}
 
 trait Auth[F[_]] {
   def newUser(username: UserName, password: Password): F[JwtToken]

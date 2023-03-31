@@ -2,19 +2,12 @@ package modules
 
 import cats.effect._
 import cats.syntax.all._
+import config.model.CheckoutConfig
 import io.chrisdavenport.log4cats.Logger
 import retry.RetryPolicy
 import retry.RetryPolicies._
 import effects._
-import eu.timepit.refined.types.all.PosInt
 import programs._
-
-import scala.concurrent.duration.FiniteDuration
-
-case class CheckoutConfig(
-    retriesLimit: PosInt,
-    retriesBackoff: FiniteDuration
-)
 
 object Programs {
   def make[F[_]: Background: Logger: Sync: Timer](

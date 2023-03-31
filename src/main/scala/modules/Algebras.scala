@@ -20,27 +20,29 @@ import algebras.{
   Tokens,
   Users
 }
-import cats.Parallel
+import cats.{ApplicativeError, Parallel}
 import cats.effect._
 import cats.syntax.all._
-import ciris.Secret
+import config.model.{AppConfig, TokenExpiration}
+import io.circe.parser.{decode => jsonDecode}
+import dev.profunktor.auth.jwt.{JwtAuth, JwtToken, jwtDecode}
 import dev.profunktor.redis4cats.RedisCommands
 import http.users.{AdminUser, CommonUser}
+import model.auth.{AdminJwtAuth, ClaimContent}
 import model.cart.ShoppingCartExpiration
-import model.user.{PasswordSalt, TokenExpiration}
+import model.user.{User, UserId, UserName}
+import pdi.jwt.JwtAlgorithm
 import skunk._
 
 import scala.concurrent.duration.DurationInt
 
 object Algebras {
 
-  // TODO move to config
-  val cryptoSecret: PasswordSalt = PasswordSalt(Secret("fake-secret"))
-
   def make[F[_]: Concurrent: Parallel: Timer](
       redis: RedisCommands[F, String, String],
       sessionPool: Resource[F, Session[F]],
-      cartExpiration: ShoppingCartExpiration
+      cartExpiration: ShoppingCartExpiration,
+      appConfig: AppConfig
   ): F[Algebras[F]] =
     for {
       brands <- LiveBrands.make[F](sessionPool)
@@ -49,9 +51,9 @@ object Algebras {
       cart <- LiveShoppingCart.make[F](items, redis, cartExpiration)
       orders <- LiveOrders.make[F](sessionPool)
       tokens <- LiveTokens.make[F]()
-      crypto <- LiveCrypto.make[F](cryptoSecret)
+      crypto <- LiveCrypto.make[F](appConfig.passwordSalt)
       users <- LiveUsers.make(sessionPool, crypto)
-      authAlg <- AuthAlgebras.make(tokens, users, redis)
+      authAlg <- AuthAlgebras.make(tokens, users, redis, appConfig)
       health <- LiveHealthCheck.make[F](sessionPool, redis)
     } yield new Algebras[F](
       cart,
@@ -84,12 +86,31 @@ object AuthAlgebras {
   def make[F[_]: Sync](
       tokens: Tokens[F],
       users: Users[F],
-      redis: RedisCommands[F, String, String]
+      redis: RedisCommands[F, String, String],
+      appConfig: AppConfig
   ): F[AuthAlgebras[F]] = {
+
+    // There is only one admin user
+    val adminToken = JwtToken(
+      appConfig.adminJwtConfig.adminToken.value.value.value
+    )
+    val adminJwtAuth: AdminJwtAuth =
+      AdminJwtAuth(
+        JwtAuth
+          .hmac(
+            appConfig.adminJwtConfig.secretKey.value.value.value,
+            JwtAlgorithm.HS256
+          )
+      )
     for {
+      adminClaim <- jwtDecode[F](adminToken, adminJwtAuth.value)
+      content <- ApplicativeError[F, Throwable].fromEither(
+        jsonDecode[ClaimContent](adminClaim.content)
+      )
+      adminUser = AdminUser(User(UserId(content.uuid), UserName("admin")))
       auth <- LiveAuth.make[F](TokenExpiration(1.day), tokens, users, redis)
       userAuth <- LiveUsersAuth.make[F](redis)
-      adminAuth <- LiveAdminAuth.make[F]()
+      adminAuth <- LiveAdminAuth.make[F](adminToken, adminUser)
     } yield new AuthAlgebras(auth, userAuth, adminAuth)
   }
 }

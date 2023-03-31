@@ -8,11 +8,11 @@ import utils.IOAssertion
 trait HttpTestSuite extends PureTestSuite {
 
   def assertHttp(routes: HttpRoutes[IO], req: Request[IO])(
-      f: Response[IO] => IO[Assertion]
+      assertion: Response[IO] => IO[Assertion]
   ): Unit = IOAssertion {
     routes.run(req).value.flatMap {
       case Some(resp) =>
-        f(resp)
+        assertion(resp)
       case None => fail("route not found")
     }
   }

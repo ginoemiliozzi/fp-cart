@@ -1,19 +1,17 @@
 package algebras
 
+import algebras.LiveCrypto.{DecryptCipher, EncryptCipher}
+
 import java.security.SecureRandom
 import java.util.Base64
 import javax.crypto.spec.{IvParameterSpec, PBEKeySpec, SecretKeySpec}
 import javax.crypto.{Cipher, SecretKeyFactory}
 import cats.effect.Sync
 import cats.syntax.all._
+import config.model.PasswordSalt
 import eu.timepit.refined.auto._
-import model.user.{
-  DecryptCipher,
-  EncryptCipher,
-  EncryptedPassword,
-  Password,
-  PasswordSalt
-}
+import io.estatico.newtype.macros.newtype
+import model.user.{EncryptedPassword, Password}
 
 trait Crypto {
   def encrypt(value: Password): EncryptedPassword
@@ -21,6 +19,9 @@ trait Crypto {
 }
 
 object LiveCrypto {
+
+  @newtype case class EncryptCipher(value: Cipher)
+  @newtype case class DecryptCipher(value: Cipher)
   def make[F[_]: Sync](secret: PasswordSalt): F[Crypto] =
     Sync[F]
       .delay {

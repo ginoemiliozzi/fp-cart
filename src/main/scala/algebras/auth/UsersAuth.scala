@@ -7,11 +7,9 @@ import dev.profunktor.auth.jwt.JwtToken
 import dev.profunktor.redis4cats.RedisCommands
 import http._
 import http.users.{AdminUser, CommonUser}
-import model.user.{User, UserId, UserName}
+import model.user.User
 import pdi.jwt.JwtClaim
 import io.circe.parser.decode
-
-import java.util.UUID
 
 trait UsersAuth[F[_], A] {
   def findUser(token: JwtToken)(claim: JwtClaim): F[Option[A]]
@@ -28,18 +26,11 @@ class LiveUsersAuth[F[_]: Functor](
       })
 }
 
-class LiveAdminAuth[F[_]: Applicative]() extends UsersAuth[F, AdminUser] {
+class LiveAdminAuth[F[_]: Applicative](
+    adminToken: JwtToken,
+    adminUser: AdminUser
+) extends UsersAuth[F, AdminUser] {
 
-  // TODO move to config - there is only one admin created manually
-  val adminToken = JwtToken(
-    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1dWlkIjoiYTY3M2NiM2MtNWExNy00NGJiLTgzMDYtYWQ4ODQ2YjZhMjBkIn0.4mUB7wvus-s3bHMjmb382R0qoIzg82Taq-6OeMfYn_w"
-  )
-  val adminUser = AdminUser(
-    User(
-      UserId(UUID.fromString("a673cb3c-5a17-44bb-8306-ad8846b6a20d")),
-      UserName("admin")
-    )
-  )
   def findUser(token: JwtToken)(claim: JwtClaim): F[Option[AdminUser]] =
     Applicative[F].pure {
       (token == adminToken)
@@ -56,6 +47,9 @@ object LiveUsersAuth {
 }
 
 object LiveAdminAuth {
-  def make[F[_]: Sync](): F[UsersAuth[F, AdminUser]] =
-    Sync[F].delay(new LiveAdminAuth())
+  def make[F[_]: Sync](
+      adminToken: JwtToken,
+      adminUser: AdminUser
+  ): F[UsersAuth[F, AdminUser]] =
+    Sync[F].delay(new LiveAdminAuth(adminToken, adminUser))
 }
