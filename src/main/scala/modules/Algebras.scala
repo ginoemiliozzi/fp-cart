@@ -23,32 +23,29 @@ import algebras.{
 import cats.{ApplicativeError, Parallel}
 import cats.effect._
 import cats.syntax.all._
-import config.model.{AppConfig, TokenExpiration}
+import config.model.AppConfig
 import io.circe.parser.{decode => jsonDecode}
 import dev.profunktor.auth.jwt.{JwtAuth, JwtToken, jwtDecode}
 import dev.profunktor.redis4cats.RedisCommands
 import http.users.{AdminUser, CommonUser}
 import model.auth.{AdminJwtAuth, ClaimContent}
-import model.cart.ShoppingCartExpiration
 import model.user.{User, UserId, UserName}
 import pdi.jwt.JwtAlgorithm
 import skunk._
 
-import scala.concurrent.duration.DurationInt
 
 object Algebras {
 
   def make[F[_]: Concurrent: Parallel: Timer](
       redis: RedisCommands[F, String, String],
       sessionPool: Resource[F, Session[F]],
-      cartExpiration: ShoppingCartExpiration,
       appConfig: AppConfig
   ): F[Algebras[F]] =
     for {
       brands <- LiveBrands.make[F](sessionPool)
       categories <- LiveCategories.make[F](sessionPool)
       items <- LiveItems.make[F](sessionPool)
-      cart <- LiveShoppingCart.make[F](items, redis, cartExpiration)
+      cart <- LiveShoppingCart.make[F](items, redis, appConfig.cartExpiration)
       orders <- LiveOrders.make[F](sessionPool)
       tokens <- LiveTokens.make[F]()
       crypto <- LiveCrypto.make[F](appConfig.passwordSalt)
@@ -108,7 +105,7 @@ object AuthAlgebras {
         jsonDecode[ClaimContent](adminClaim.content)
       )
       adminUser = AdminUser(User(UserId(content.uuid), UserName("admin")))
-      auth <- LiveAuth.make[F](TokenExpiration(1.day), tokens, users, redis)
+      auth <- LiveAuth.make[F](appConfig.tokenExpiration, tokens, users, redis)
       userAuth <- LiveUsersAuth.make[F](redis)
       adminAuth <- LiveAdminAuth.make[F](adminToken, adminUser)
     } yield new AuthAlgebras(auth, userAuth, adminAuth)

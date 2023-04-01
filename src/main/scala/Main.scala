@@ -2,12 +2,10 @@ import cats.effect._
 import dev.profunktor.redis4cats.log4cats.log4CatsInstance
 import io.chrisdavenport.log4cats.Logger
 import io.chrisdavenport.log4cats.slf4j.Slf4jLogger
-import model.cart.ShoppingCartExpiration
 import modules.{Algebras, HttpApi, HttpClients, Programs, Security}
 import org.http4s.server.blaze.BlazeServerBuilder
 
 import scala.concurrent.ExecutionContext
-import scala.concurrent.duration.DurationInt
 
 object Main extends IOApp {
 
@@ -16,15 +14,15 @@ object Main extends IOApp {
 
     config.loader[IO].flatMap { appConfig =>
       Logger[IO].info(s"Loaded config: $appConfig") *>
-        AppResources.make[IO]().use { res =>
+        AppResources.make[IO](appConfig).use { res =>
           for {
             algebras <- Algebras.make(
               res.redis,
               res.psql,
-              ShoppingCartExpiration(1.hour),
               appConfig
             )
-            clients <- HttpClients.make[IO](res.httpClient)
+            clients <- HttpClients
+              .make[IO](res.httpClient, appConfig.paymentConfig)
             programs <- Programs
               .make[IO](appConfig.checkoutConfig, algebras, clients)
             security <- Security.make[IO](appConfig)
@@ -35,7 +33,10 @@ object Main extends IOApp {
               security.userJwtAuth
             )
             _ <- BlazeServerBuilder[IO](ExecutionContext.global)
-              .bindHttp(8080, "0.0.0.0")
+              .bindHttp(
+                appConfig.httpServerConfig.port.value,
+                appConfig.httpServerConfig.host.value
+              )
               .withHttpApp(httpApi.httpApp)
               .serve
               .compile

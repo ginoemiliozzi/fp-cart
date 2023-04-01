@@ -4,10 +4,11 @@ import cats.ApplicativeError
 import cats.effect.Sync
 import dev.profunktor.redis4cats.RedisCommands
 import effects.MonadThrow
-import model.cart.{Cart, CartItem, CartTotal, Quantity, ShoppingCartExpiration}
+import model.cart.{Cart, CartItem, CartTotal, Quantity}
 import model.item.ItemId
 import model.user.UserId
 import cats.syntax.all._
+import config.model.ShoppingCartExpiration
 import squants.market.{Money, USD}
 import utils.Utils.readCoercUUID
 
