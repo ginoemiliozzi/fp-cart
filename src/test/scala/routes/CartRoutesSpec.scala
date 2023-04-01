@@ -1,15 +1,17 @@
+package routes
+
 import cats.effect.IO
+import http._
+import http.routes.CartRoutes
 import io.circe.syntax.EncoderOps
+import model.cart.{Cart, CartTotal}
 import org.http4s.circe._
 import org.http4s.implicits.http4sLiteralsSyntax
 import org.http4s.{Method, Request, Status, Uri}
-import suite.HttpTestSuite
-import http._
-import http.routes.CartRoutes
 import utils.Arbitraries._
-import mocks.middlewares.{commonUserAuthMiddleware, defaultUser}
-import mocks.shoppingCart.successfulCart
-import model.cart.{Cart, CartTotal}
+import utils.mocks.middlewares.{commonUserAuthMiddleware, defaultUser}
+import utils.mocks.shoppingCart.successfulCart
+import utils.suite.HttpTestSuite
 
 final class CartRoutesSpec extends HttpTestSuite {
 

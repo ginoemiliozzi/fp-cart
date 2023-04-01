@@ -1,4 +1,4 @@
-package mocks
+package utils.mocks
 
 import algebras.ShoppingCart
 import cats.effect.IO

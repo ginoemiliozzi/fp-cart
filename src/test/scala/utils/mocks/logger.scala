@@ -1,4 +1,4 @@
-package mocks
+package utils.mocks
 
 import cats.effect.IO
 import cats.effect.concurrent.Ref

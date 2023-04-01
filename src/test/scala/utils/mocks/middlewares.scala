@@ -1,4 +1,4 @@
-package mocks
+package utils.mocks
 
 import cats.data.Kleisli
 import cats.effect.IO

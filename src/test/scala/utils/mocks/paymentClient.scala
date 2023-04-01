@@ -1,4 +1,4 @@
-package mocks
+package utils.mocks
 
 import algebras.PaymentClient
 import cats.effect.IO

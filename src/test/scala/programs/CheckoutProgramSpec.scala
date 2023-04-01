@@ -1,34 +1,25 @@
+package programs
+
 import cats.effect.IO
 import cats.effect.concurrent.Ref
 import effects.Background
 import io.chrisdavenport.log4cats.Logger
-import mocks.orders.{failingOrders, successfulOrders}
-import mocks.paymentClient.{
-  failNTimesBeforeSuccess,
-  successfulPaymentClient,
-  unreachableClient
-}
-import mocks.shoppingCart.{emptyCart, successfulCart}
 import model.card.Card
 import model.cart.CartTotal
-import model.order.{
-  EmptyCartError,
-  OrderError,
-  OrderId,
-  PaymentError,
-  PaymentId
-}
+import model.order._
 import model.user.UserId
-import programs.CheckoutProgram
 import retry.RetryPolicies.limitRetries
 import retry.RetryPolicy
-import suite.PureTestSuite
 import utils.Arbitraries._
-import mocks.background.{NoOpBackground, bgCountSchedules}
-import mocks.logger.{accErrors, noLogs}
 import utils.IOAssertion
+import utils.mocks.background.{NoOpBackground, bgCountSchedules}
+import utils.mocks.logger.{accErrors, noLogs}
+import utils.mocks.orders.{failingOrders, successfulOrders}
+import utils.mocks.paymentClient.{failNTimesBeforeSuccess, successfulPaymentClient, unreachableClient}
+import utils.mocks.shoppingCart.{emptyCart, successfulCart}
+import utils.suite.PureTestSuite
 
-final class CheckoutSpec extends PureTestSuite {
+final class CheckoutProgramSpec extends PureTestSuite {
   val MaxRetries = 3
 
   val retryPolicy: RetryPolicy[IO] = limitRetries[IO](MaxRetries)

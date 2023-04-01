@@ -19,6 +19,7 @@ import model.card.{
 import model.cart.{Cart, CartItem, CartTotal, Quantity}
 import model.category.{Category, CategoryId, CategoryName}
 import model.item.{Item, ItemDescription, ItemId, ItemName}
+import model.user.{Password, UserName}
 import org.scalacheck.Gen
 import squants.market.{Money, USD}
 
@@ -118,4 +119,8 @@ object Generators {
       CardExpiration(exp),
       CardVerifValue(cvv)
     )
+
+  val usernameGen: Gen[UserName] = cbStr[UserName]
+  val passwordGen: Gen[Password] = cbStr[Password]
+
 }

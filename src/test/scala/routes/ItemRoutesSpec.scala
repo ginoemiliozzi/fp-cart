@@ -1,16 +1,18 @@
+package routes
+
 import cats.effect.IO
+import http._
+import http.routes.ItemRoutes
 import io.circe.syntax.EncoderOps
+import model.brand.{Brand, BrandId, BrandName}
+import model.item.Item
 import org.http4s.circe._
 import org.http4s.implicits.http4sLiteralsSyntax
 import org.http4s.{Method, Request, Status, Uri}
-import suite.HttpTestSuite
-import http._
-import http.routes.ItemRoutes
-import mocks.items.usingItems
-import model.brand.{Brand, BrandId, BrandName}
-import model.item.Item
 import utils.Arbitraries._
 import utils.Generators.{cbUuid, itemsWithBrandGen}
+import utils.mocks.items.usingItems
+import utils.suite.HttpTestSuite
 
 final class ItemRoutesSpec extends HttpTestSuite {
 

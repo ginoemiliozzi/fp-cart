@@ -1,4 +1,4 @@
-package mocks
+package utils.mocks
 
 import algebras.Orders
 import cats.effect.IO

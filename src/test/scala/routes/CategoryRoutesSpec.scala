@@ -1,14 +1,16 @@
+package routes
+
 import cats.effect.IO
+import http._
 import http.routes.CategoryRoutes
 import io.circe.syntax.EncoderOps
+import model.category.Category
 import org.http4s.circe._
 import org.http4s.implicits.http4sLiteralsSyntax
 import org.http4s.{Method, Request, Status}
-import suite.HttpTestSuite
-import http._
-import mocks.categories.usingCategories
-import model.category.Category
 import utils.Arbitraries._
+import utils.mocks.categories.usingCategories
+import utils.suite.HttpTestSuite
 
 final class CategoryRoutesSpec extends HttpTestSuite {
 

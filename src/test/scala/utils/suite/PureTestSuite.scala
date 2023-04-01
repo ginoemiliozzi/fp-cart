@@ -1,4 +1,4 @@
-package suite
+package utils.suite
 
 import cats.effect.{ContextShift, IO, Timer}
 import org.scalatest.funsuite.AnyFunSuite
