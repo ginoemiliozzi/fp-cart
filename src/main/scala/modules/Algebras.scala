@@ -47,7 +47,7 @@ object Algebras {
       items <- LiveItems.make[F](sessionPool)
       cart <- LiveShoppingCart.make[F](items, redis, appConfig.cartExpiration)
       orders <- LiveOrders.make[F](sessionPool)
-      tokens <- LiveTokens.make[F]()
+      tokens <- LiveTokens.make[F](appConfig)
       crypto <- LiveCrypto.make[F](appConfig.passwordSalt)
       users <- LiveUsers.make(sessionPool, crypto)
       authAlg <- AuthAlgebras.make(tokens, users, redis, appConfig)

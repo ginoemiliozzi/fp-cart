@@ -23,6 +23,12 @@ CREATE TABLE items (
         ON UPDATE NO ACTION ON DELETE NO ACTION
 );
 
+CREATE TABLE users (
+    uuid UUID PRIMARY KEY,
+    name VARCHAR UNIQUE NOT NULL,
+    password VARCHAR NOT NULL
+);
+
 CREATE TABLE orders (
     uuid UUID PRIMARY KEY,
     user_id UUID NOT NULL,
@@ -32,10 +38,4 @@ CREATE TABLE orders (
     CONSTRAINT user_id_fkey FOREIGN KEY (user_id)
         REFERENCES users (uuid) MATCH SIMPLE
         ON UPDATE NO ACTION ON DELETE NO ACTION
-);
-
-CREATE TABLE users (
-    uuid UUID PRIMARY KEY,
-    name VARCHAR UNIQUE NOT NULL,
-    password VARCHAR NOT NULL
 );

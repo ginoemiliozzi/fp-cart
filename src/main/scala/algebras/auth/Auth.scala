@@ -43,7 +43,7 @@ final class LiveAuth[F[_]: MonadThrow] private (
         case None =>
           for {
             userId <- users.create(username, password)
-            tk <- tokens.create
+            tk <- tokens.create(userId)
             u = User(userId, username)
             _ <- setLoggedInUserRedis(u, tk)
           } yield tk
@@ -59,7 +59,9 @@ final class LiveAuth[F[_]: MonadThrow] private (
           redis.get(username.value).flatMap {
             case Some(tk) => Applicative[F].pure(JwtToken(tk))
             case None =>
-              tokens.create.flatTap(token => setLoggedInUserRedis(user, token))
+              tokens
+                .create(user.id)
+                .flatTap(token => setLoggedInUserRedis(user, token))
           }
       }
   }
