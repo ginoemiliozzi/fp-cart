@@ -5,9 +5,15 @@ ThisBuild / scalaVersion := "2.13.3"
 resolvers ++= Resolver.sonatypeOssRepos("snapshots")
 
 lazy val root = (project in file("."))
-  .enablePlugins(AshScriptPlugin)
+  .enablePlugins(DockerPlugin)
+  .enablePlugins(AshScriptPlugin) // generate binary using Ash
   .settings(
     name := "fp-cart",
+    packageName in Docker := "shopping-cart",
+    dockerExposedPorts ++= Seq(8080),
+    dockerUpdateLatest := true,
+    dockerBaseImage := "openjdk:8u201-jre-alpine3.9", // use only jre to reduce size of docker img,
+    makeBatScripts := Seq(), // do not create scripts for windows
     scalacOptions += "-Ymacro-annotations",
     libraryDependencies ++= Seq(
       compilerPlugin(Libraries.kindProjector cross CrossVersion.full),
