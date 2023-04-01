@@ -20,7 +20,7 @@ services:
 
   shopping_cart:
     restart: always
-    image: shopping-cart:latest
+    image: fp-cart:latest
     network_mode: host
     ports:
       - "8080:8080"

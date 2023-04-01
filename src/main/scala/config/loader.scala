@@ -67,14 +67,16 @@ object loader {
         case Test =>
           default(
             redisUri = RedisURI(NonEmptyString("redis://localhost")),
-            paymentUri =
-              PaymentURI(NonEmptyString("http://localhost:1234/fake-payments"))
+            paymentUri = PaymentURI(
+              NonEmptyString("https://www.uuidgenerator.net/api/version4/1")
+            )
           )
         case Prod =>
           default(
-            redisUri = RedisURI(NonEmptyString("redis://10.123.154.176")),
-            paymentUri =
-              PaymentURI(NonEmptyString("https://fakepayments.net/api"))
+            redisUri = RedisURI(NonEmptyString("redis://localhost")),
+            paymentUri = PaymentURI(
+              NonEmptyString("https://www.uuidgenerator.net/api/version4/1")
+            )
           )
       }
       .load[F]

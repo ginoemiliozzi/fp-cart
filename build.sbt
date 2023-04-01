@@ -9,7 +9,7 @@ lazy val root = (project in file("."))
   .enablePlugins(AshScriptPlugin) // generate binary using Ash
   .settings(
     name := "fp-cart",
-    packageName in Docker := "shopping-cart",
+    packageName in Docker := "fp-cart",
     dockerExposedPorts ++= Seq(8080),
     dockerUpdateLatest := true,
     dockerBaseImage := "openjdk:8u201-jre-alpine3.9", // use only jre to reduce size of docker img,

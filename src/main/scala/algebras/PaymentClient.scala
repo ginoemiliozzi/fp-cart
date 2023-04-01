@@ -3,7 +3,7 @@ package algebras
 import effects._
 import model.order.{PaymentError, PaymentId}
 import model.Payment
-import org.http4s.Method.POST
+import org.http4s.Method.GET
 import org.http4s.{Status, Uri}
 import org.http4s.circe.{JsonDecoder, toMessageSynax}
 import org.http4s.client.Client
@@ -21,12 +21,13 @@ class LivePaymentClient[F[_]: JsonDecoder: MonadThrow: BracketThrow](
     paymentConfig: PaymentConfig
 ) extends PaymentClient[F]
     with Http4sClientDsl[F] {
-  def process(payment: Payment): F[PaymentId] =
+  def process(payment: Payment): F[PaymentId] = {
+    // In a real scenario we should POST the payment information to the external payments API
     Uri
       .fromString(paymentConfig.uri.value.value)
       .liftTo[F]
       .flatMap { uri =>
-        POST(payment, uri).flatMap { req =>
+        GET(uri).flatMap { req =>
           client
             .run(req)
             .use { res =>
@@ -39,4 +40,5 @@ class LivePaymentClient[F[_]: JsonDecoder: MonadThrow: BracketThrow](
             }
         }
       }
+  }
 }
