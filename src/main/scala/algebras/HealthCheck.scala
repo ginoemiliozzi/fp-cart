@@ -53,7 +53,7 @@ final class LiveHealthCheck[
       .orElse(false.pure[F])
       .map(PostgresStatus.apply)
 
-  val status: F[AppStatus] =
+  def status: F[AppStatus] =
     (redisHealth, postgresHealth).parMapN(AppStatus)
 }
 

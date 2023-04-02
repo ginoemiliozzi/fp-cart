@@ -4,7 +4,7 @@ import algebras.auth.Auth
 import cats.effect.IO
 import dev.profunktor.auth.jwt
 import dev.profunktor.auth.jwt.JwtToken
-import http.users.InvalidUserOrPassword
+import http.users.{InvalidUserOrPassword, UsernameInUse}
 import model.user
 
 object auth {
@@ -30,11 +30,11 @@ object auth {
     ): IO[Unit] = IO.unit
   }
 
-  def invalidCredentialsLogin: Auth[IO] = new Auth[IO] {
+  def failingAuth: Auth[IO] = new Auth[IO] {
     override def newUser(
         username: user.UserName,
         password: user.Password
-    ): IO[jwt.JwtToken] = IO.pure(defaultSuccessToken)
+    ): IO[jwt.JwtToken] = IO.raiseError(UsernameInUse(username))
 
     override def login(
         username: user.UserName,
