@@ -9,6 +9,7 @@ services:
       - POSTGRES_DB=store
     volumes:
       - ./src/main/resources/tables.sql:/docker-entrypoint-initdb.d/init.sql
+      - postgres-data:/var/lib/postgresql/data  # Persistent volume for data
 
   Redis:
     restart: always
@@ -32,3 +33,6 @@ services:
       - FP_CART_ADMIN_USER_TOKEN=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1dWlkIjoiODk2NjJlMzMtYjAzZC00ZTYzLWE2OWItY2FmY2M5NTkyOWRlIn0.D5VMw2a9MHGGz0goeXvk9LkBaUF9ljoEy4dp987U6JI
       - FP_CART_PASSWORD_SALT=T3sT!S4lty
       - FP_CART_APP_ENV=test
+volumes:
+  postgres-data:
+    driver: local

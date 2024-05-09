@@ -13,18 +13,18 @@ import http.users.{InvalidUserOrPassword, UsernameInUse}
 import io.circe.syntax.EncoderOps
 import model.user.{Password, User, UserName}
 
-trait Auth[F[_]] {
+trait AuthCreds[F[_]] {
   def newUser(username: UserName, password: Password): F[JwtToken]
   def login(username: UserName, password: Password): F[JwtToken]
   def logout(token: JwtToken, username: UserName): F[Unit]
 }
 
-final class LiveAuth[F[_]: MonadThrow] private (
+final class LiveAuthCreds[F[_]: MonadThrow] private (
     tokenExpiration: TokenExpiration,
     tokens: Tokens[F],
     users: Users[F],
     redis: RedisCommands[F, String, String]
-) extends Auth[F] {
+) extends AuthCreds[F] {
   private val TokenExpiration = tokenExpiration.value
 
   private def setLoggedInUserRedis(user: User, token: JwtToken): F[Unit] = {
@@ -70,14 +70,14 @@ final class LiveAuth[F[_]: MonadThrow] private (
     redis.del(username.value) *> redis.del(token.value)
 }
 
-object LiveAuth {
+object LiveAuthCreds {
   def make[F[_]: Sync](
       tokenExpiration: TokenExpiration,
       tokens: Tokens[F],
       users: Users[F],
       redis: RedisCommands[F, String, String]
-  ): F[Auth[F]] =
+  ): F[AuthCreds[F]] =
     Sync[F].delay(
-      new LiveAuth(tokenExpiration, tokens, users, redis)
+      new LiveAuthCreds(tokenExpiration, tokens, users, redis)
     )
 }

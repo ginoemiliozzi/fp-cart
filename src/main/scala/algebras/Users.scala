@@ -53,7 +53,7 @@ final class LiveUsers[F[_]: Sync: BracketThrow] private (
   def create(
       username: UserName,
       password: Password
-  ): F[UserId] =
+  ): F[UserId] = {
     sessionPool.use { session =>
       session.prepare(insertUser).use { cmd =>
         genCoercUUID[F, UserId].flatMap { id =>
@@ -66,6 +66,7 @@ final class LiveUsers[F[_]: Sync: BracketThrow] private (
         }
       }
     }
+  }
 }
 
 object LiveUsers {

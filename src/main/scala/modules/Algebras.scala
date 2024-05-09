@@ -1,6 +1,12 @@
 package modules
 
-import algebras.auth.{Auth, LiveAdminAuth, LiveAuth, LiveUsersAuth, UsersAuth}
+import algebras.auth.{
+  AuthCreds,
+  LiveAdminAuth,
+  LiveAuthCreds,
+  LiveUsersAuth,
+  UsersAuth
+}
 import algebras.{
   Brands,
   Categories,
@@ -32,7 +38,6 @@ import model.auth.{AdminJwtAuth, ClaimContent}
 import model.user.{User, UserId, UserName}
 import pdi.jwt.JwtAlgorithm
 import skunk._
-
 
 object Algebras {
 
@@ -74,7 +79,7 @@ final class Algebras[F[_]] private (
 )
 
 final class AuthAlgebras[F[_]] private (
-    val auth: Auth[F],
+    val auth: AuthCreds[F],
     val userAuth: UsersAuth[F, CommonUser],
     val adminAuth: UsersAuth[F, AdminUser]
 )
@@ -105,7 +110,8 @@ object AuthAlgebras {
         jsonDecode[ClaimContent](adminClaim.content)
       )
       adminUser = AdminUser(User(UserId(content.uuid), UserName("admin")))
-      auth <- LiveAuth.make[F](appConfig.tokenExpiration, tokens, users, redis)
+      auth <- LiveAuthCreds
+        .make[F](appConfig.tokenExpiration, tokens, users, redis)
       userAuth <- LiveUsersAuth.make[F](redis)
       adminAuth <- LiveAdminAuth.make[F](adminToken, adminUser)
     } yield new AuthAlgebras(auth, userAuth, adminAuth)

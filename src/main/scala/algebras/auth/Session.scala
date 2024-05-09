@@ -12,13 +12,13 @@ import pdi.jwt.JwtClaim
 import io.circe.parser.decode
 
 trait UsersAuth[F[_], A] {
-  def findUser(token: JwtToken)(claim: JwtClaim): F[Option[A]]
+  def userSessionData(token: JwtToken)(claim: JwtClaim): F[Option[A]]
 }
 
 class LiveUsersAuth[F[_]: Functor](
     redis: RedisCommands[F, String, String]
 ) extends UsersAuth[F, CommonUser] {
-  def findUser(token: JwtToken)(claim: JwtClaim): F[Option[CommonUser]] =
+  def userSessionData(token: JwtToken)(claim: JwtClaim): F[Option[CommonUser]] =
     redis
       .get(token.value)
       .map(_.flatMap { u =>
@@ -31,7 +31,7 @@ class LiveAdminAuth[F[_]: Applicative](
     adminUser: AdminUser
 ) extends UsersAuth[F, AdminUser] {
 
-  def findUser(token: JwtToken)(claim: JwtClaim): F[Option[AdminUser]] =
+  def userSessionData(token: JwtToken)(claim: JwtClaim): F[Option[AdminUser]] =
     Applicative[F].pure {
       (token == adminToken)
         .guard[Option]

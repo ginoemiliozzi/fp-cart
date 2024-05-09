@@ -1,6 +1,6 @@
 package http.routes.auth
 
-import algebras.auth.Auth
+import algebras.auth.AuthCreds
 import cats.syntax.all._
 import cats.{Defer, Monad}
 import dev.profunktor.auth.AuthHeaders
@@ -10,7 +10,7 @@ import org.http4s.server.{AuthMiddleware, Router}
 import org.http4s.{AuthedRoutes, HttpRoutes}
 
 final class LogoutRoutes[F[_]: Defer: Monad](
-    auth: Auth[F]
+    auth: AuthCreds[F]
 ) extends Http4sDsl[F] {
 
   private[routes] val prefixPath = "/auth"

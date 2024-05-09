@@ -1,6 +1,6 @@
 package http.routes
 
-import algebras.auth.Auth
+import algebras.auth.AuthCreds
 import cats.Defer
 import effects.MonadThrow
 import http.users.{CreateUser, UsernameInUse}
@@ -12,7 +12,7 @@ import http._
 import cats.implicits._
 
 final class UserRoutes[F[_]: Defer: JsonDecoder: MonadThrow](
-    auth: Auth[F]
+    auth: AuthCreds[F]
 ) extends Http4sDsl[F] {
   private[routes] val prefixPath = "/auth"
   private val httpRoutes: HttpRoutes[F] =

@@ -55,12 +55,12 @@ final class HttpApi[F[_]: Concurrent: Timer] private (
   private val usersMiddleware =
     JwtAuthMiddleware[F, CommonUser](
       userJwtAuth.value,
-      algebras.authAlgebras.userAuth.findUser
+      algebras.authAlgebras.userAuth.userSessionData
     )
   private val adminMiddleware =
     JwtAuthMiddleware[F, AdminUser](
       adminJwtAuth.value,
-      algebras.authAlgebras.adminAuth.findUser
+      algebras.authAlgebras.adminAuth.userSessionData
     )
 
   private val loginRoutes =

@@ -2,7 +2,6 @@ package algebras
 
 import algebras.LiveCrypto.{DecryptCipher, EncryptCipher}
 
-import java.security.SecureRandom
 import java.util.Base64
 import javax.crypto.spec.{IvParameterSpec, PBEKeySpec, SecretKeySpec}
 import javax.crypto.{Cipher, SecretKeyFactory}
@@ -25,10 +24,9 @@ object LiveCrypto {
   def make[F[_]: Sync](secret: PasswordSalt): F[Crypto] =
     Sync[F]
       .delay {
-        val random = new SecureRandom()
-        val ivBytes = new Array[Byte](16)
-        random.nextBytes(ivBytes)
-        val iv = new IvParameterSpec(ivBytes);
+        val fixedIV = "FixedInitVector!" // (16 characters)
+        val ivBytes = fixedIV.getBytes("UTF-8")
+        val iv = new IvParameterSpec(ivBytes)
         val salt = secret.value.value.getBytes("UTF-8")
         val keySpec = new PBEKeySpec("password".toCharArray, salt, 65536, 256)
         val factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA1")
