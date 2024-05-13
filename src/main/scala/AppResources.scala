@@ -38,6 +38,7 @@ object AppResources {
       BlazeClientBuilder[F](ExecutionContext.global)
         .withConnectTimeout(appConfig.httpClientConfig.connectTimeout)
         .withRequestTimeout(appConfig.httpClientConfig.requestTimeout)
+        .withDefaultSslContext
         .resource
 
     (

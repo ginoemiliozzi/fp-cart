@@ -22,7 +22,6 @@ class LivePaymentClient[F[_]: JsonDecoder: MonadThrow: BracketThrow](
 ) extends PaymentClient[F]
     with Http4sClientDsl[F] {
   def process(payment: Payment): F[PaymentId] = {
-    // In a real scenario we should POST the payment information to the external payments API
     Uri
       .fromString(paymentConfig.uri.value.value)
       .liftTo[F]
