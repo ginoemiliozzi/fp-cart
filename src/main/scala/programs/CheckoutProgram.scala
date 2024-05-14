@@ -6,7 +6,6 @@ import model.order.{
   EmptyCartError,
   OrderError,
   OrderId,
-  PaymentError,
   PaymentId
 }
 import model.user.UserId
@@ -54,9 +53,7 @@ final class CheckoutProgram[F[_]: MonadThrow: Logger: Background: Timer](
       paymentClient.process(payment)
     )
 
-    action.adaptError { case e =>
-      PaymentError(Option(e.getMessage).getOrElse("Unknown"))
-    }
+    action
   }
 
   private def createOrder(

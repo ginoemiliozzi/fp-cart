@@ -14,12 +14,9 @@ import model.card.Card
 import model.cart.{Cart, CartItem, CartTotal}
 import model.category.{Category, CategoryParam}
 import model.item.{CreateItemParam, Item, UpdateItemParam}
-import model.order.{Order, PaymentId}
+import model.order.Order
 import model.user.User
 import squants.market._
-import cats.syntax.all._
-
-import java.util.UUID
 
 private[http] trait jsonCodecs {
 
@@ -29,19 +26,6 @@ private[http] trait jsonCodecs {
 
   implicit val categoryParamDecoder: Decoder[CategoryParam] =
     Decoder.forProduct1("name")(CategoryParam.apply)
-
-  implicit val paymentIdDecoder: Decoder[PaymentId] = new Decoder[PaymentId] {
-    final def apply(c: HCursor): Decoder.Result[PaymentId] = {
-      for {
-        uuidStr <- c.as[String]
-        uuid <- Either
-          .catchNonFatal(UUID.fromString(uuidStr))
-          .leftMap(_ =>
-            DecodingFailure("Error parsing payment uuid", List.empty)
-          )
-      } yield PaymentId(uuid)
-    }
-  }
 
   // ----- Coercible codecs -----
   implicit def coercibleDecoder[A: Coercible[B, *], B: Decoder]: Decoder[A] =
