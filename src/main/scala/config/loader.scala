@@ -46,7 +46,7 @@ object loader {
           requestTimeout = 2.seconds
         ),
         PostgreSQLConfig(
-          host = "localhost",
+          host = "postgresql",
           port = 5432,
           user = "postgres",
           database = "store",
@@ -66,14 +66,14 @@ object loader {
       .flatMap {
         case Test =>
           default(
-            redisUri = RedisURI(NonEmptyString("redis://localhost")),
+            redisUri = RedisURI(NonEmptyString("redis://redis")),
             paymentUri = PaymentURI(
               NonEmptyString("https://www.uuidgenerator.net/api/version4/1")
             )
           )
         case Prod =>
           default(
-            redisUri = RedisURI(NonEmptyString("redis://localhost")),
+            redisUri = RedisURI(NonEmptyString("redis://redis")),
             paymentUri = PaymentURI(
               NonEmptyString("https://www.uuidgenerator.net/api/version4/1")
             )
