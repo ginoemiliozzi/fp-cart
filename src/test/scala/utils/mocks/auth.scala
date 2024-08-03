@@ -1,6 +1,5 @@
 package utils.mocks
-
-import algebras.auth.Auth
+import algebras.auth.AuthCreds
 import cats.effect.IO
 import dev.profunktor.auth.jwt
 import dev.profunktor.auth.jwt.JwtToken
@@ -13,7 +12,7 @@ object auth {
     "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.c3VjY2Vzcw.hSmFc2_O5x_6adKbg_ZWECZZiCN7rgEbmfBlZw9CM_k"
   )
 
-  def successfulAuth: Auth[IO] = new Auth[IO] {
+  def successfulAuth: AuthCreds[IO] = new AuthCreds[IO] {
     override def newUser(
         username: user.UserName,
         password: user.Password
@@ -30,7 +29,7 @@ object auth {
     ): IO[Unit] = IO.unit
   }
 
-  def failingAuth: Auth[IO] = new Auth[IO] {
+  def failingAuth: AuthCreds[IO] = new AuthCreds[IO] {
     override def newUser(
         username: user.UserName,
         password: user.Password
