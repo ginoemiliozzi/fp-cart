@@ -25,7 +25,7 @@ import org.http4s._
 import org.http4s.implicits._
 import org.http4s.server.middleware._
 import org.http4s.server.Router
-
+import org.http4s.server.middleware.CORS
 import scala.concurrent.duration._
 
 object HttpApi {
@@ -103,8 +103,8 @@ final class HttpApi[F[_]: Concurrent: Timer] private (
     adminItemRoutes <+> adminBrandRoutes <+> adminCategoryRoutes
 
   private val routes: HttpRoutes[F] = Router(
-    "/v1" -> openRoutes,
-    "/v1" + "/admin" -> adminRoutes
+    "/v1" -> CORS(openRoutes),
+    "/v1" + "/admin" -> CORS(adminRoutes)
   )
 
   private val middleware: HttpRoutes[F] => HttpRoutes[F] = {

@@ -11,7 +11,7 @@ object card {
   type Rgx = W.`"^[a-zA-Z]+(([',. -][a-zA-Z ])?[a-zA-Z]*)*$"`.T
   type CardNamePred = String Refined MatchesRegex[Rgx]
   type CardNumberPred = Long Refined Size[16]
-  type CardExpirationPred = Int Refined Size[4]
+  type CardExpirationPred = String Refined Size[4]
   type CardVerifValuePred = Int Refined Size[3]
 
   @newtype case class CardName(value: CardNamePred)
